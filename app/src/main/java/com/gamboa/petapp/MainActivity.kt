@@ -26,7 +26,9 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.core.Constants
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.pet_row.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -36,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     internal var expandState = SparseBooleanArray()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -43,14 +46,16 @@ class MainActivity : AppCompatActivity() {
         recycler_data.setHasFixedSize(true)
         recycler_data.layoutManager = LinearLayoutManager(this)
 
+
+
         retrieveData()
 
         setData()
 
-//        val fab = findViewById<View>(R.id.fab) as FloatingActionButton
-//        fab.setOnClickListener { view ->
-//            addNewItemDialog()
-//        }
+        val fab = findViewById<View>(R.id.fab) as FloatingActionButton
+        fab.setOnClickListener { view ->
+            addNewItemDialog()
+        }
 
     }
 
@@ -201,7 +206,6 @@ class MainActivity : AppCompatActivity() {
             adapter.stopListening()
         super.onStop()
     }
-}
 
 //    private fun addDataPetList(dataSnapshot: DataSnapshot){
 //
@@ -230,7 +234,72 @@ class MainActivity : AppCompatActivity() {
 //
 //    }
 
+    private fun addNewItemDialog() {
+
+
+        val alert = AlertDialog.Builder(this)
+        val itemEditText = EditText(this)
+        alert.setMessage("Add New Item")
+        alert.setTitle("Enter To Do Item Text")
+        alert.setView(itemEditText)
+        alert.setPositiveButton("Submit") { dialog, positiveButton ->
+
+            val db = FirebaseDatabase.getInstance().getReference("pet_item")
+
+            val petItem = Pet.create()
+            petItem.petName = itemEditText.text.toString()
+            petItem.status = false
+            //We first make a push so that a new item is made with a unique ID
+            val newItem = db.push().key
+
+            petItem.petId = newItem
+
+            db.child(newItem!!).setValue(petItem).addOnCompleteListener{
+                Toast.makeText(applicationContext, "salvou", Toast.LENGTH_SHORT).show()
+            }
+            //then, we used the reference to set the value on that ID
+            dialog.dismiss()
+
+        }
+        alert.show()
+    }
+}
+
+
+//    private fun addDataPetList(dataSnapshot: DataSnapshot){
+//
+//        val items = dataSnapshot.children.iterator()
+//
+//        if (items.hasNext()) {
+//            val petsIndex = items.next()
+//            val itemsIterator = petsIndex.children.iterator()
+//
+//            while (itemsIterator.hasNext()) {
+//
+//                val currentItem = itemsIterator.next()
+//                val petItem = Pet.create()
+//
+//                val map = currentItem.getValue() as HashMap<String, Any>
+//
+//                petItem.petId = currentItem.key
+//                petItem.petName = map.get("itemText") as String?
+//
+//                pets!!.add(petItem)
+//
+//            }
+//        }
+//
+//        adapter.notifyDataSetChanged()
+//
+//    }
+
+
+
+
+
 //    private fun addNewItemDialog() {
+//
+//
 //        val alert = AlertDialog.Builder(this)
 //        val itemEditText = EditText(this)
 //        alert.setMessage("Add New Item")
@@ -249,5 +318,5 @@ class MainActivity : AppCompatActivity() {
 //            Toast.makeText(this, "Item saved with ID " + petItem.petId, Toast.LENGTH_SHORT).show()   }
 //        alert.show()
 //    }
-//
-//}
+
+
