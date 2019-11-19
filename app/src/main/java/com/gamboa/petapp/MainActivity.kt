@@ -67,12 +67,12 @@ class MainActivity : AppCompatActivity() {
 
         adapter = object : FirebaseRecyclerAdapter<Pet, ItemViewHolder>(options) {
 
-            override fun getItemViewType(position: Int): Int {
-                return if (pets[position].isExpandable)
-                    1
-                else
-                    0
-            }
+//            override fun getItemViewType(position: Int): Int {
+//                return if (pets[position].isExpandable)
+//                    1
+//                else
+//                    0
+//            }
 
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
 
@@ -250,11 +250,11 @@ class MainActivity : AppCompatActivity() {
             petItem.petName = itemEditText.text.toString()
             petItem.status = false
             //We first make a push so that a new item is made with a unique ID
-            val newItem = db.push().key
+            val newItem = db.push().key!!
 
             petItem.petId = newItem
 
-            db.child(newItem!!).setValue(petItem).addOnCompleteListener{
+            db.child(newItem).setValue(petItem).addOnCompleteListener{
                 Toast.makeText(applicationContext, "salvou", Toast.LENGTH_SHORT).show()
             }
             //then, we used the reference to set the value on that ID
