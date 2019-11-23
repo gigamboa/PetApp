@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -61,7 +62,6 @@ class AddPet : AppCompatActivity() {
 
             db.child(newItem).setValue(petItem).addOnCompleteListener{
                 Toast.makeText(applicationContext, "salvou", Toast.LENGTH_SHORT).show()
-
             }
 
             uploadImage()
@@ -99,9 +99,36 @@ class AddPet : AppCompatActivity() {
         ref.putFile(selectedPhotoUri!!)
             .addOnSuccessListener {
                 Log.d("Register", "Upload image: ${it.metadata?.path}")
+
+                ref.downloadUrl.addOnSuccessListener {
+
+                    saveToDatabase(it.toString())
+                }
+            }
+
+            .addOnFailureListener {
+
             }
     }
 
+    private fun saveToDatabase(petImageUrl: String) {
+
+        val db = FirebaseDatabase.getInstance().getReference("pet_item")
+
+        val petItem = Pet.create()
+        petItem.petName = petName_input.text.toString()
+        petItem.status = false
+        petItem.petImage = petImageUrl
+        //We first make a push so that a new item is made with a unique ID
+        val newItem = db.push().key!!
+
+        petItem.petId = newItem
+
+        db.child(newItem).setValue(petItem).addOnCompleteListener{
+            Toast.makeText(applicationContext, "salvou", Toast.LENGTH_SHORT).show()
+        }
+
+    }
 
 
 }

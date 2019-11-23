@@ -8,6 +8,7 @@ class Pet {
 
     var petId: String? = null
     var petName: String? = null
+    var petImage: String? = null
     var petType: String? = null
     var status: Boolean? = false
 
