@@ -28,6 +28,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.pet_row.*
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -62,8 +63,7 @@ class MainActivity : AppCompatActivity() {
         setData()
 
         val fab = findViewById<View>(R.id.fab) as FloatingActionButton
-        fab.setOnClickListener { view ->
-            //addNewItemDialog()
+        fab.setOnClickListener { _ ->
 
             val addPet =  Intent(this@MainActivity, AddPet::class.java)
             startActivity(addPet)
@@ -79,12 +79,6 @@ class MainActivity : AppCompatActivity() {
 
         adapter = object : FirebaseRecyclerAdapter<Pet, ItemViewHolder>(options) {
 
-//            override fun getItemViewType(position: Int): Int {
-//                return if (pets[position].isExpandable)
-//                    1
-//                else
-//                    0
-//            }
 
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
 
@@ -95,7 +89,6 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onBindViewHolder(holder: ItemViewHolder, position: Int, model: Pet) {
-
 
                         holder.setIsRecyclable(false)
                         holder.txt_item_text.text = model.petName
@@ -108,6 +101,10 @@ class MainActivity : AppCompatActivity() {
                                 val petDetail =  Intent(this@MainActivity, PetDetails::class.java)
                                 petDetail.putExtra("petId", adapter.getRef(position).key)
                                 petDetail.putExtra("petName", adapter.getItem(position).petName)
+                                petDetail.putExtra("petImage", adapter.getItem(position).petImage)
+                                petDetail.putExtra("petAge", adapter.getItem(position).petAge)
+                                petDetail.putExtra("petType", adapter.getItem(position).petType)
+                                petDetail.putExtra("petStatus", adapter.getItem(position).status)
                                 startActivity(petDetail)
 
                             }
@@ -153,64 +150,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (adapter != null)
             adapter.startListening()
     }
 
     override fun onStop() {
-        if (adapter != null)
-            adapter.stopListening()
+        adapter.stopListening()
         super.onStop()
     }
-
-
-
-
-
-//    private fun addNewItemDialog() {
-//
-//
-//        val alert = AlertDialog.Builder(this)
-//        val itemEditText = EditText(this)
-//        val image = ImageView(this)
-//
-//        alert.setMessage("Add New Item")
-//        alert.setTitle("Enter To Do Item Text")
-//        alert.setView(itemEditText)
-//        alert.setView(image)
-//
-//        alert.setNeutralButton("Imagem") {dialog, neutralButton ->
-//
-//            val intent = Intent(Intent.ACTION_PICK)
-//            intent.type = "image/*"
-//            startActivityForResult(intent, 0)
-//
-//
-//        }
-//        alert.setPositiveButton("Submit") { dialog, positiveButton ->
-//
-//            val db = FirebaseDatabase.getInstance().getReference("pet_item")
-//
-//            val petItem = Pet.create()
-//            petItem.petName = itemEditText.text.toString()
-//            petItem.status = false
-//            //We first make a push so that a new item is made with a unique ID
-//            val newItem = db.push().key!!
-//
-//            petItem.petId = newItem
-//
-//            db.child(newItem).setValue(petItem).addOnCompleteListener{
-//                Toast.makeText(applicationContext, "salvou", Toast.LENGTH_SHORT).show()
-//
-//
-//            }
-//            //then, we used the reference to set the value on that ID
-//            dialog.dismiss()
-//
-//        }
-//        alert.show()
-//    }
-//
 
 
 }

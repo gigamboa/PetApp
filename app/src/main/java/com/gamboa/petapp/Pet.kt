@@ -10,6 +10,7 @@ class Pet {
     var petName: String? = null
     var petImage: String? = null
     var petType: String? = null
-    var status: Boolean? = false
+    var petAge: String? = null
+    var status: String? = null
 
 }

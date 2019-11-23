@@ -48,21 +48,6 @@ class AddPet : AppCompatActivity() {
 
         val saveBtn = findViewById<View>(R.id.savePet_btn)
         saveBtn.setOnClickListener{ view ->
-            //addNewItemDialog()
-
-            val db = FirebaseDatabase.getInstance().getReference("pet_item")
-
-            val petItem = Pet.create()
-            petItem.petName = petName_input.text.toString()
-            petItem.status = false
-            //We first make a push so that a new item is made with a unique ID
-            val newItem = db.push().key!!
-
-            petItem.petId = newItem
-
-            db.child(newItem).setValue(petItem).addOnCompleteListener{
-                Toast.makeText(applicationContext, "salvou", Toast.LENGTH_SHORT).show()
-            }
 
             uploadImage()
 
@@ -117,15 +102,17 @@ class AddPet : AppCompatActivity() {
 
         val petItem = Pet.create()
         petItem.petName = petName_input.text.toString()
-        petItem.status = false
+        petItem.status = petStatus_input.text.toString()
+        petItem.petAge = petAge_input.text.toString()
+        petItem.petType = petType_input.text.toString()
         petItem.petImage = petImageUrl
-        //We first make a push so that a new item is made with a unique ID
+
         val newItem = db.push().key!!
 
         petItem.petId = newItem
 
         db.child(newItem).setValue(petItem).addOnCompleteListener{
-            Toast.makeText(applicationContext, "salvou", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "Animal adicionado", Toast.LENGTH_SHORT).show()
         }
 
     }

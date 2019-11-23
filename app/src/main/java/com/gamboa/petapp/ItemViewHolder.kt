@@ -24,17 +24,13 @@ class ItemViewHolder(itemView: View, isExpandable:Boolean) : RecyclerView.ViewHo
 
     init {
         if(isExpandable){
-            txt_item_text = itemView.findViewById(R.id.txt_item_text) as TextView
-            txt_child_item_text = itemView.findViewById(R.id.txt_child_item_text) as TextView
+            txt_item_text = itemView.findViewById(R.id.txt_petName) as TextView
 
-            button = itemView.findViewById(R.id.button) as RelativeLayout
-
-            expandable_layout = itemView.findViewById(R.id.expandable_layout) as ExpandableLinearLayout
         }
 
         else {
 
-            txt_item_text = itemView.findViewById(R.id.txt_item_text) as TextView
+            txt_item_text = itemView.findViewById(R.id.txt_petName) as TextView
         }
 
         itemView.setOnClickListener{
