@@ -1,8 +1,11 @@
 package com.gamboa.petapp
 
-import android.animation.ObjectAnimator
-import android.content.Context
+import android.app.Activity
+import android.content.Intent
+import android.graphics.drawable.BitmapDrawable
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.util.SparseBooleanArray
 import android.view.LayoutInflater
@@ -10,25 +13,23 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.RelativeLayout
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.firebase.ui.database.FirebaseRecyclerOptions
-import com.github.aakira.expandablelayout.ExpandableLayoutListenerAdapter
-import com.github.aakira.expandablelayout.Utils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.core.Constants
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.pet_row.*
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MainActivity : AppCompatActivity() {
@@ -38,15 +39,23 @@ class MainActivity : AppCompatActivity() {
 
     internal var expandState = SparseBooleanArray()
 
+    private var filePath: Uri? = null
+
+    internal var storage:FirebaseStorage?=null
+    internal var storageReference: StorageReference?=null
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        storage = FirebaseStorage.getInstance()
+        storageReference = storage!!.reference
+
         recycler_data.setHasFixedSize(true)
         recycler_data.layoutManager = LinearLayoutManager(this)
-
-
 
         retrieveData()
 
@@ -54,7 +63,10 @@ class MainActivity : AppCompatActivity() {
 
         val fab = findViewById<View>(R.id.fab) as FloatingActionButton
         fab.setOnClickListener { view ->
-            addNewItemDialog()
+            //addNewItemDialog()
+
+            val addPet =  Intent(this@MainActivity, AddPet::class.java)
+            startActivity(addPet)
         }
 
     }
@@ -76,39 +88,14 @@ class MainActivity : AppCompatActivity() {
 
             override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
 
-                if (viewType == 0) {
                     val itemView = LayoutInflater
                         .from(parent.context)
                         .inflate(R.layout.pet_row, parent, false)
                     return ItemViewHolder(itemView, viewType == 1)
-                } else {
-
-                    val itemView = LayoutInflater
-                        .from(parent.context)
-                        .inflate(R.layout.pet_row_expanded, parent, false)
-                    return ItemViewHolder(itemView, viewType == 1)
-                }
             }
 
             override fun onBindViewHolder(holder: ItemViewHolder, position: Int, model: Pet) {
-                when (holder.itemViewType) {
-                    0 -> {
-                        holder.setIsRecyclable(false)
-                        holder.txt_item_text.text = model.petName
 
-                        holder.setItemClickListener(object : ItemClickListener {
-                            override fun onClick(view: View, position: Int) {
-
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "" + model.petName,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        })
-                    }
-
-                    1 -> {
 
                         holder.setIsRecyclable(false)
                         holder.txt_item_text.text = model.petName
@@ -116,37 +103,15 @@ class MainActivity : AppCompatActivity() {
                         holder.setItemClickListener(object : ItemClickListener {
                             override fun onClick(view: View, position: Int) {
 
-                                Toast.makeText(
-                                    this@MainActivity,
-                                    "" + model.petName,
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Toast.makeText(this@MainActivity, "" + model.petName, Toast.LENGTH_SHORT).show()
+
+                                val petDetail =  Intent(this@MainActivity, PetDetails::class.java)
+                                petDetail.putExtra("petId", adapter.getRef(position).key)
+                                petDetail.putExtra("petName", adapter.getItem(position).petName)
+                                startActivity(petDetail)
+
                             }
                         })
-
-                        holder.expandable_layout.setInRecyclerView(true)
-                        holder.expandable_layout.isExpanded = expandState.get(position)
-                        holder.expandable_layout.setListener(object :
-                            ExpandableLayoutListenerAdapter() {
-                            override fun onPreOpen() {
-                                changeRotate(holder.button, 0f, 180f).start()
-                                expandState.put(position, true)
-                            }
-
-                            override fun onPreClose() {
-                                changeRotate(holder.button, 0f, 180f).start()
-                                expandState.put(position, false)
-                            }
-                        })
-
-                        holder.button.rotation = if (expandState.get(position)) 180f else 0f
-                        holder.button.setOnClickListener {
-                            holder.expandable_layout.toggle()
-                        }
-
-                        holder.txt_child_item_text.text = model.petType
-                    }
-                }
             }
 
         }
@@ -156,15 +121,6 @@ class MainActivity : AppCompatActivity() {
             expandState.append(i, false)
         recycler_data.addItemDecoration(DividerItemDecoration(this, DividerItemDecoration.VERTICAL))
         recycler_data.adapter = adapter
-    }
-
-    private fun changeRotate(button: RelativeLayout, from: Float, to: Float): ObjectAnimator {
-
-        val animator = ObjectAnimator.ofFloat(button, "rotation", from, to)
-        animator.duration = 300
-        animator.interpolator = Utils.createInterpolator(Utils.LINEAR_INTERPOLATOR)
-        return animator
-
     }
 
     private fun retrieveData() {
@@ -207,93 +163,7 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
     }
 
-//    private fun addDataPetList(dataSnapshot: DataSnapshot){
-//
-//        val items = dataSnapshot.children.iterator()
-//
-//        if (items.hasNext()) {
-//            val petsIndex = items.next()
-//            val itemsIterator = petsIndex.children.iterator()
-//
-//            while (itemsIterator.hasNext()) {
-//
-//                val currentItem = itemsIterator.next()
-//                val petItem = Pet.create()
-//
-//                val map = currentItem.getValue() as HashMap<String, Any>
-//
-//                petItem.petId = currentItem.key
-//                petItem.petName = map.get("itemText") as String?
-//
-//                pets!!.add(petItem)
-//
-//            }
-//        }
-//
-//        adapter.notifyDataSetChanged()
-//
-//    }
-
-    private fun addNewItemDialog() {
-
-
-        val alert = AlertDialog.Builder(this)
-        val itemEditText = EditText(this)
-        alert.setMessage("Add New Item")
-        alert.setTitle("Enter To Do Item Text")
-        alert.setView(itemEditText)
-        alert.setPositiveButton("Submit") { dialog, positiveButton ->
-
-            val db = FirebaseDatabase.getInstance().getReference("pet_item")
-
-            val petItem = Pet.create()
-            petItem.petName = itemEditText.text.toString()
-            petItem.status = false
-            //We first make a push so that a new item is made with a unique ID
-            val newItem = db.push().key!!
-
-            petItem.petId = newItem
-
-            db.child(newItem).setValue(petItem).addOnCompleteListener{
-                Toast.makeText(applicationContext, "salvou", Toast.LENGTH_SHORT).show()
-            }
-            //then, we used the reference to set the value on that ID
-            dialog.dismiss()
-
-        }
-        alert.show()
-    }
-}
-
-
-//    private fun addDataPetList(dataSnapshot: DataSnapshot){
-//
-//        val items = dataSnapshot.children.iterator()
-//
-//        if (items.hasNext()) {
-//            val petsIndex = items.next()
-//            val itemsIterator = petsIndex.children.iterator()
-//
-//            while (itemsIterator.hasNext()) {
-//
-//                val currentItem = itemsIterator.next()
-//                val petItem = Pet.create()
-//
-//                val map = currentItem.getValue() as HashMap<String, Any>
-//
-//                petItem.petId = currentItem.key
-//                petItem.petName = map.get("itemText") as String?
-//
-//                pets!!.add(petItem)
-//
-//            }
-//        }
-//
-//        adapter.notifyDataSetChanged()
-//
-//    }
-
-
+    var selectedPhotoUri: Uri? = null
 
 
 
@@ -302,21 +172,51 @@ class MainActivity : AppCompatActivity() {
 //
 //        val alert = AlertDialog.Builder(this)
 //        val itemEditText = EditText(this)
+//        val image = ImageView(this)
+//
 //        alert.setMessage("Add New Item")
 //        alert.setTitle("Enter To Do Item Text")
 //        alert.setView(itemEditText)
+//        alert.setView(image)
+//
+//        alert.setNeutralButton("Imagem") {dialog, neutralButton ->
+//
+//            val intent = Intent(Intent.ACTION_PICK)
+//            intent.type = "image/*"
+//            startActivityForResult(intent, 0)
+//
+//
+//        }
 //        alert.setPositiveButton("Submit") { dialog, positiveButton ->
+//
+//            val db = FirebaseDatabase.getInstance().getReference("pet_item")
+//
 //            val petItem = Pet.create()
 //            petItem.petName = itemEditText.text.toString()
 //            petItem.status = false
 //            //We first make a push so that a new item is made with a unique ID
-//            val newItem = Database.child(Constants.FIREBASE_ITEM).push()
-//            petItem.petId = newItem.key
+//            val newItem = db.push().key!!
+//
+//            petItem.petId = newItem
+//
+//            db.child(newItem).setValue(petItem).addOnCompleteListener{
+//                Toast.makeText(applicationContext, "salvou", Toast.LENGTH_SHORT).show()
+//
+//
+//            }
 //            //then, we used the reference to set the value on that ID
-//            newItem.setValue(petItem)
 //            dialog.dismiss()
-//            Toast.makeText(this, "Item saved with ID " + petItem.petId, Toast.LENGTH_SHORT).show()   }
+//
+//        }
 //        alert.show()
 //    }
+//
+
+
+}
+
+
+
+
 
 
