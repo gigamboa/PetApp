@@ -1,18 +1,19 @@
 package com.gamboa.petapp
 
 import android.view.View
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.github.aakira.expandablelayout.ExpandableLinearLayout
+import org.w3c.dom.Text
 
 
 class ItemViewHolder(itemView: View, isExpandable:Boolean) : RecyclerView.ViewHolder(itemView) {
 
-    lateinit var txt_item_text: TextView
-    lateinit var txt_child_item_text: TextView
-    lateinit var button:RelativeLayout
-    lateinit var expandable_layout: ExpandableLinearLayout
+    var txt_petName: TextView
+    var txt_petStatus: TextView
+    var row_petImage: ImageView
 
     lateinit var iItemClickListener: ItemClickListener
 
@@ -23,15 +24,11 @@ class ItemViewHolder(itemView: View, isExpandable:Boolean) : RecyclerView.ViewHo
     }
 
     init {
-        if(isExpandable){
-            txt_item_text = itemView.findViewById(R.id.txt_petName) as TextView
 
-        }
+        txt_petName = itemView.findViewById(R.id.txt_petName) as TextView
+        txt_petStatus = itemView.findViewById(R.id.txt_petStatus) as TextView
+        row_petImage = itemView.findViewById(R.id.row_petImage) as ImageView
 
-        else {
-
-            txt_item_text = itemView.findViewById(R.id.txt_petName) as TextView
-        }
 
         itemView.setOnClickListener{
             view -> iItemClickListener.onClick(view, adapterPosition)

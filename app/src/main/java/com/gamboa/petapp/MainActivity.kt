@@ -27,6 +27,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.pet_row.*
 import java.util.*
@@ -91,12 +92,13 @@ class MainActivity : AppCompatActivity() {
             override fun onBindViewHolder(holder: ItemViewHolder, position: Int, model: Pet) {
 
                         holder.setIsRecyclable(false)
-                        holder.txt_item_text.text = model.petName
+                        holder.txt_petName.text = model.petName
+                        holder.txt_petStatus.text = model.status
+
+                        Picasso.with(this@MainActivity).load(model.petImage).into(holder.row_petImage)
 
                         holder.setItemClickListener(object : ItemClickListener {
                             override fun onClick(view: View, position: Int) {
-
-                                Toast.makeText(this@MainActivity, "" + model.petName, Toast.LENGTH_SHORT).show()
 
                                 val petDetail =  Intent(this@MainActivity, PetDetails::class.java)
                                 petDetail.putExtra("petId", adapter.getRef(position).key)
