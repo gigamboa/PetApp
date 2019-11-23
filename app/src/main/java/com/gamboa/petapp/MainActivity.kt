@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
         super.onStop()
     }
 
-    var selectedPhotoUri: Uri? = null
+
 
 
 

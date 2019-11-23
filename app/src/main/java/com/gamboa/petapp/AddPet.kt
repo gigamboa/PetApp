@@ -15,11 +15,14 @@ import android.widget.Toast
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import kotlinx.android.synthetic.main.activity_add_pet.*
 import java.util.*
 
 class AddPet : AppCompatActivity() {
 
     private var filePath: Uri? = null
+
+
     internal var storage: FirebaseStorage?=null
     internal var storageReference: StorageReference?=null
 
@@ -32,6 +35,15 @@ class AddPet : AppCompatActivity() {
 
         petName_input = findViewById(R.id.petName_input)
 
+
+        val imageButton = findViewById<View>(R.id.petImage_input)
+        imageButton.setOnClickListener {view ->
+
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            startActivityForResult(intent, 0)
+
+        }
 
         val saveBtn = findViewById<View>(R.id.savePet_btn)
         saveBtn.setOnClickListener{ view ->
@@ -71,7 +83,7 @@ class AddPet : AppCompatActivity() {
             val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, selectedPhotoUri)
 
             val bitmapDrawable = BitmapDrawable(this.resources, bitmap)
-            //photoButton.setBackground(bitmapDrawable)
+            petImage_input.setBackground(bitmapDrawable)
         }
     }
 
