@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener { _ ->
 
             val addPet =  Intent(this@MainActivity, AddPet::class.java)
+            addPet.putExtra("CallerId", "addPet")
             startActivity(addPet)
         }
 

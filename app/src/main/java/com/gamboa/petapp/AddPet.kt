@@ -24,8 +24,10 @@ class AddPet : AppCompatActivity() {
     private var filePath: Uri? = null
 
 
-    internal var storage: FirebaseStorage?=null
-    internal var storageReference: StorageReference?=null
+    internal var storage: FirebaseStorage? = null
+    internal var storageReference: StorageReference? = null
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,9 +38,28 @@ class AddPet : AppCompatActivity() {
 
         petName_input = findViewById(R.id.petName_input)
 
+        var petName = intent.getStringExtra("petName")
+        var petAge = intent.getStringExtra("petAge")
+        var petType = intent.getStringExtra("petType")
+        var petStatus = intent.getStringExtra("petStatus")
+//        var petId = intent.getStringExtra("petId")
+
+        var intent = this.intent
+        if (intent != null) {
+            var caller = intent.getStringExtra("CallerId")
+
+            if (caller.equals("editPet")) {
+                petName_input.setText(petName)
+                petAge_input.setText(petAge)
+                petStatus_input.setText(petStatus)
+                petType_input.setText(petType)
+
+            }
+        }
+
 
         val imageButton = findViewById<View>(R.id.petImage_input)
-        imageButton.setOnClickListener {view ->
+        imageButton.setOnClickListener { view ->
 
             val intent = Intent(Intent.ACTION_PICK)
             intent.type = "image/*"
@@ -47,15 +68,16 @@ class AddPet : AppCompatActivity() {
         }
 
         val saveBtn = findViewById<View>(R.id.savePet_btn)
-        saveBtn.setOnClickListener{ view ->
+        saveBtn.setOnClickListener { view ->
 
             uploadImage()
 
-            val intent =  Intent(this, MainActivity::class.java)
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
-
         }
+
+
     }
 
     var selectedPhotoUri: Uri? = null
@@ -63,7 +85,7 @@ class AddPet : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if(requestCode == 0 && resultCode == Activity.RESULT_OK && data != null) {
+        if (requestCode == 0 && resultCode == Activity.RESULT_OK && data != null) {
 
             selectedPhotoUri = data.data
 
@@ -111,12 +133,28 @@ class AddPet : AppCompatActivity() {
 
         petItem.petId = newItem
 
-        db.child(newItem).setValue(petItem).addOnCompleteListener{
-            Toast.makeText(applicationContext, "Animal adicionado", Toast.LENGTH_SHORT).show()
+        if (intent != null) {
+            var caller = intent.getStringExtra("CallerId")
+
+            if (caller.equals("addPet")) {
+
+                db.child(newItem).setValue(petItem).addOnCompleteListener {
+                    Toast.makeText(applicationContext, "Animal adicionado", Toast.LENGTH_SHORT)
+                        .show()
+                }
+
+            }
+            if (caller.equals("editPet")) {
+
+                val petItemCurrent = intent.getStringExtra("petId")
+
+                db.child(petItemCurrent).setValue(petItem)
+            }
         }
 
     }
 
 
 }
+
 

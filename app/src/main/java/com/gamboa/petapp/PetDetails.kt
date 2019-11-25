@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import com.firebase.ui.database.FirebaseRecyclerAdapter
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -18,6 +19,7 @@ class PetDetails : AppCompatActivity() {
 
     internal var storage: FirebaseStorage?=null
     internal var storageReference: StorageReference?=null
+    internal lateinit var adapter: FirebaseRecyclerAdapter<Pet, ItemViewHolder>
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,10 +36,17 @@ class PetDetails : AppCompatActivity() {
         val navBarTitle = "Mais detalhes"
         supportActionBar?.title = navBarTitle
 
-        petName_display.text = intent.getStringExtra("petName")
-        petStatus_display.text = intent.getStringExtra("petStatus")
-        petAge_display.text = intent.getStringExtra("petAge")
-        petType_display.text = intent.getStringExtra("petType")
+        var petName = intent.getStringExtra("petName")
+        var petAge = intent.getStringExtra("petAge")
+        var petType = intent.getStringExtra("petType")
+        var petStatus = intent.getStringExtra("petStatus")
+        var petId = intent.getStringExtra("petId")
+
+        petName_display.text = petName
+        petStatus_display.text = petAge
+        petAge_display.text = petType
+        petType_display.text = petStatus
+
         var imageUrl = intent.getStringExtra("petImage")
 
         Picasso.with(this).load(imageUrl).into(petImage_display)
@@ -56,6 +65,19 @@ class PetDetails : AppCompatActivity() {
             val intent =  Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
+        }
+
+        val editBtn = findViewById(R.id.edit_btn) as Button
+        editBtn.setOnClickListener { view ->
+
+            val editPet =  Intent(this, AddPet::class.java)
+            editPet.putExtra("CallerId", "editPet")
+            editPet.putExtra("petId", petId)
+            editPet.putExtra("petName", petName)
+            editPet.putExtra("petAge", petAge)
+            editPet.putExtra("petStatus", petStatus)
+            editPet.putExtra("petType", petType)
+            startActivity(editPet)
         }
     }
 
